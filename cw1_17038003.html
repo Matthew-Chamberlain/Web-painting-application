@@ -1,0 +1,577 @@
+<!doctype html>
+<html lang="en">
+	<!-- 
+		
+		Changelog 
+		15/10/2018 Template released, the basic template was tested - mouse tracking is partially complete, colour selection is partially complete.
+		30/10/2018 Added the remaining four colour elements and added functionality to all the colours, increased the canvas to a suitable size, fixed the reset button so it changes the background colour to the currently selected colour, imporved mouse tracking so paint would appear directly beneath the brush.
+		30/10/2018 Added css elements including the blend button, the eraser button, the four different brush sizes and an element that displays the currently selected colour, added functionality to the eraser button so it paints the same colour as the background, added vibrant borders around the selected colour element and the eraser element that would appear and disapper when the tool was selected.
+		31/10/2018 Added functionality to the brush size buttons and a border that appears around the currently selected brush size, chaged the way the offset works to ensure that paint would appear directly beneath the brush no matter the size, made a change to the reset function as the new ofset method caused some bugs
+		31/10/2018 Added functionality to the blend tool so it would ask for three numbers and create a colour code string out of the inputs, the fill colour would then be set to this code and the selected colour element would be changed to the blended colour, added validation so that the user can only enter numbers and the numbers have to be between 0 and 255.
+		1/11/2018 Added a spray paint mode which uses a random number function to add to a number in the range -brush size radius to brush size radius in order to create a random painting effect depending on the brush size the spray mode can be accessed by holding shift and painting normally, added a label beneath the selected colour element that informs the user wheter the are using the brush or the spray, added a label informing the user how to acess the spray tool.
+		1/11/2018 Added the ability to acess to paint in the selected colour by clicking the selected colour element rather than choosing the same colour from the preset colours. This is so that users do not have to re-enter their blended colour everytime they go off the paint tool.
+		3/11/2018 Added the ability to paint dots by just tapping the mouse button by calling the track mouse function on mouse down aswell as on mouse move. improved the spray function so that the dots are placed in a fully random position along the horizontal and the vertical by using two random numbers.
+	
+		Suggested Tasks:
+		1. Take time to fully review and become familiar with this template and ensure it works (in the sense that there are no errors).
+		2. Fully read the assignment brief - it contains all the requirements and details you need to design, test and implement
+		3. After each development cycle (e.g. any time spent programming - this could be an hour to several hours) you are expected to add a changelog entry; each entry should include the date followed by a single sentence that describes what has been changed, updated, added, fixed etc (Please note this is a CORE expectation and requirements, get in to the habit of added them as you go!)
+		4. After you have implemented a requirement (there are 11 in total; these are described in sections 2 & 3 of the Marks Awarded section of the assignment brief) conduct and document a test to check whether the implemented requirement works as expected and as needed.  Record these tests in the test log section located and the bottom of this page.
+		5. You are not allowed to remove any code already provided but you can expand and further develop it
+			5a. Any new functions must abide by the naming convention specified in the assignment brief (e.g. fnPaint should be fnPaint_MW)
+			5b. Any new variables must abide by the naming convention specified in the assignment brief (e.g. iMouseX the initial "i" to indicate it will hold an integer value or sColour to indicate a string value)
+			5c. Change the name of this template so that YOUR ACTUAL student id replaces the word "studentid" in the filename 
+		6. Work to complete the various requirements - start with the simplest, 
+			6a. Review and work out how to set the canvas to a more appropriate size (e.g. 800 pixels wide and tall)
+			6b.	Extend the functionality implemented in the first colour selector to the other three
+			6c. Expand the fnClearCanvas function so that it actually works
+			6d. Work out how to enhance the clear canvas function so that it resets the canvas' background colour to the currently selected colour; 
+				dont forget to update the important variables (e.g. sCanvasColour)
+			6e. Extend the colour selection tools so that there are eight working tools
+			6f. Design some method to indicate which colour is active; this should automatically change as soon as a new colour is selected
+			6g. This template includes some interested opportunities to explore holding down the control, alt and shift keys while moving the mouse; 
+				see if you can somehow use these examples to add implement any of the requirements (e.g. erase mode, brush size, etc.) - remember,
+				don't try to solve the whole thing in a single instance, build it up little by little, keep copies of your work so if everything breaks
+				you can also return to a working version and try again
+
+		Critical note:
+			Please ensure that you maintain and use the expected programming standards outlined in the brief in the Marks Awarded section 4.1 to 4.5 (Programming Standards and Documentation) - especially the use of the REQUIRED function and variable naming convention /
+
+			You will be expected to maintain, program and submit neat code that fully supports appropriate indentation and comments - don't forget failure to maintain standards will result in a significant penalty.  
+
+		Good luck, before we leave you to get on with this - remember, by completing the tutorial sessions and practical’s all this should (at least) be familiar; complete the tutorials before attempting to program this system. 
+
+	-->
+	
+	<head> 
+		<title>Coursework 1 Template v1.0</title>
+		
+		<style>
+			/* 
+				Notes on styling.
+				if you are interested in knowing or using more CSS search "HTML CSS" online; please note - this is a programming challenge, and although a good aesthetic is helpful there are almost no marks for spending time playing with CSS 
+			*/
+
+            body { 
+            	/* 
+            		this css selector (body) tells the browser that this style block applies to ALL <body> elements on this page; just because there is only 1 <body> doesnt make any difference 
+            	*/
+                background-color: #c0c0c0; /* this css property sets the background colour of the entire body of the web page */
+                /* 
+                	the colour: #c0c0c0 uses the format RRGGBB (RR=c0, GG=c0, BB=c0), anytime all the three channels (RGB) is all the same the resulting colour is a shade of grey. Each channel can be 0 to 255 (or in HEX: 00 to FF)
+                */
+            }
+
+
+            #cw1MainContainer { 
+            	/* 
+            		this css selector ("#" followed by "cw1MainContainer") tells the browser that this style block applies to ONLY the element with the id="cw1MainContainer" - the # tells the browser to match IDs
+            	*/
+                position: absolute; /* this css property tells the browser that the selected element (in this case id="cw1MainContainer") will be specifically told where to be displayed using LEFT and TOP (for x and y). 0, 0 being the top left and corner */
+                left: 20px; /* this css property defines/sets the left position for the selected element; in essence, how far from the left edge it should be placed */
+                top: 20px; /* this css property defines/sets the top position for the selected element; in essence, how far from the top edge it should be placed */
+            }
+            
+
+			canvas { 
+				/* 
+					this css selector (canvas) tells the browser that this style block applies to ALL <canvas> elements on this page; just because there is only 1 doesnt make any difference 
+				*/
+                background-color: #fafafa; /* this css property defines/sets the background colour of the selected element (in this case <canvas>) */
+                border: 1px solid #a0a0a0; /* this css property defines/sets the border of the selected element (in this case <canvas>) */
+				cursor: crosshair; /* this css property defines/sets the shape and type of the mouse pointer when over this element */
+			}
+			
+
+			#cw1ColoursContainer {
+				position: relative; /* this css property tells the browser that the selected element (in this case id="cw1ColoursContainer") will be specifically told where to be displayed using LEFT and TOP (for x and y). 0, 0 being the last position of the previous element (rather than the top left corner) */
+			}
+			
+
+			#cw1ControlsContainer {
+				position: relative;
+				left: 226px; /* this css property tells the browser to move left 226px; because we are positioned 'relatively' this is relative from the previous elements position rather the the top, left corner */
+				top: 0px; 
+			}
+			
+
+            .tool { /* this css selector ("." followed by "tool") tells the browser that this style block applies to ONLY the elements with a matching class, e.g. class="tool" */
+				position: absolute;
+				width: 25px; /* sets it so the width of any element with the class tool will automatically be set to 25px unless overwrited */
+				height: 25px; /* sets it so the height of any element with the class tool will automatically be set to 25px unless overwrited */
+				border: 1px solid #a0a0a0; /* this css property defines/sets the border of the selected element (in this case the elements with class="tool") */
+			}
+			
+
+			.tool:hover { /* this ":hover" is a special css condition that to automatically applied if the mouse is moved (or hovers) over the specified element (in this case elements with class="tool") */
+				border: 1px solid #f0f0f0; /* this css property defines/sets the border of the selected element (in this case the elements with the class tool) */
+			}
+			
+
+			#colour1 { /* this style is applied to elements with a specific id, in this instance "colour1" */
+				left: 0px;
+				top: 0px; 
+				background-color: #732626;
+			}
+			#colour2 { /* apply this style to element id="colour2" */
+				left: 0px;
+				top: 28px;  
+				background-color: #00ff00; 
+			}
+			#colour3 { /* apply this style to element id="colour3" */
+				left: 28px; 
+				top: 0px; 
+				background-color: #0000ff;
+			}
+			#colour4 { /* apply this style to element id="colour4" */
+				left: 28px; 
+				top: 28px;
+				background-color: #4A235A;
+			}
+			
+			#colour5 { /* apply this style to element id="colour5" */
+				left: 56px; 
+				top: 0px; 
+				background-color: #ff8c00;
+			}
+			#colour6 { /* apply this style to element id="colour6" */
+				left: 56px;
+				top: 28px; 
+				background-color: #ffff00;
+			}
+			#colour7 { /* apply this style to element id="colour7" */
+				left: 84px; 
+				top: 0px; 
+				background-color: #00ffff;
+			}
+			#colour8 { /* apply this style to element id="colour8" */
+				left: 84px; 
+				top: 28px; 
+				background-color: #000000;
+			}
+			#blend { /* apply this style to element id= "blend" */
+				left: 112px;
+				top: 0px;
+				width: 53px;
+				height: 53px;
+				background-image: linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet); /* sets the background of the element to a gradient from left to right using the colours in the brackets. I have chosen a rainbow effect to indicate to the user that this tool can be used to select any colour. */
+				text-align: center; /* sets it so any text will appear in the centre of the element */
+				line-height: 50px; /* sets it so the line appears 50px down so that the text is centred vertically in the box as well as horizontally */
+			}
+			
+			#selectedColour { /* apply this style to the element id="selectedColour"*/
+				left: 168px; 
+				top: 0px; 
+				width: 51px; 
+				height: 24px; 
+				background-color: #000000; 
+				border: 2px solid #ff00ff; 
+			}
+			
+			#brushSize1Border { /* apply this style to element id="brushSize1Border" */
+				left:0px; 
+				top: 0px; 
+			}
+			
+			#brushSize2Border { /* apply this style to element id="brushSize2Border" */
+				left:0px; 
+				top: 28px; 
+			}
+			
+			#brushSize3Border { /* apply this style to element id="brushSize3Border" */
+				left:28px;  
+				top: 0px;  
+			}
+			
+			#brushSize4Border { /* apply this style to element id="brushSize4Border" */
+				left:28px; 
+				top: 28px; 
+			}
+			
+			#brushSize1 { /* apply this style to element id="brushSize1" */
+				position: absolute; 
+				left:8.5px;
+				top: 8.5px;
+				width: 10px;
+				height: 10px;
+				background-color: #000000;
+			}
+			
+			#brushSize2 { /* apply this style to element id="brushSize1" */
+				position: absolute;
+				left:34px;
+				top: 6px;
+				width: 15px;
+				height: 15px;
+				background-color: #000000;
+			}
+			
+			#brushSize3 { /* apply this style to element id="brushSize1" */
+				position: absolute;
+				left:3.6px;
+				top: 31.5px;
+				width: 20px;
+				height: 20px;
+				background-color: #000000;
+			}
+			
+			#brushSize4 { /* apply this style to element id="brushSize4" */
+				position: absolute;
+				left:29px;
+				top: 29px;
+				width: 25px;
+				height: 25px;
+				background-color: #000000;
+			}
+			
+			#control1 { /* apply this style to element id="control1" */
+				position: absolute;
+				left: 116px;
+			}
+			
+			#eraser { /* apply this style to element id="eraser" */
+				position: absolute;
+				left: 58px;
+				top: 0px;
+				width: 51px;
+				height: 51px;
+				background-color: #f0f0f0;
+				border: 2px solid #a0a0a0;
+				text-align: center;
+				line-height: 50px;
+			}
+			#brushType { /* apply this style to element id="brushType" */
+				position: absolute;
+				left: 168px;
+				top: 29px;
+				width: 51px;
+				height: 22px;
+				background-color: #f0f0f0;
+				border: 2px solid #a0a0a0;
+				text-align: center;
+				line-height: 25px;
+			}
+			#sprayInstructions { /* apply this style to element id="sprayInstructions" */
+				position: absolute;
+				left: 400px;
+				top: 0px;
+				width: 400px;
+				height: 51px;
+				background-color: #f0f0f0;
+				border: 2px solid #a0a0a0;
+				text-align: center;
+				line-height: 50px;
+			}
+ 
+		</style>
+		
+		<script>
+			var oCanvas, oCanvasContext; //declare the global variables used to hold and control the canvas element
+			var sFillColour; //create a global variable used to hold the active/selected colour
+			var sCanvasColour; //create a global variable used to hold the canvas colour
+			var iMouseX, iMouseY; //declare the global variables used to hold the mouse's coordinates
+			var iBrushWidth, iBrushHeight; //declare the global variables used to hold the selected brush sizes
+			var undoList = new Array();
+			index = -1;
+			
+			function fnInitialise(iCanvasWidth, iCanvasHeight) {
+				//this function is called via the HTML body tag and the onload event
+				//fnDebugMessage("Running fnInitialise"); //debug message
+				oCanvas = document.getElementById("cw1Canvas"); //create a reference to the HTML canvas element
+				if (oCanvas.getContext) { //test to see if we can read the canvas' context; if true we have found the canvas
+					oCanvas.width=iCanvasWidth; //set the canvas width using the width argument passed to the fnInitialise function
+					oCanvas.height=iCanvasHeight; //set the canvas height using the width argument passed to the fnInitialise function
+					oCanvasContext = oCanvas.getContext("2d"); //set the context to 2D
+					//fnDebugMessage("Canvas size, width: " + iCanvasWidth + ", height: " + iCanvasHeight); //debug message, if this message appears in 
+					
+					//set some default values`
+					sCanvasColour=getComputedStyle(oCanvas).getPropertyValue("background-color"); //this instruction automatically detects the background colour of the cavas and stores it in the global sCanvasColour variable
+					//fnDebugMessage("Canvas background colour: " + sCanvasColour); //debug message, if this message appears in 
+
+					//let set a default brush size
+					iBrushWidth=5;
+					iBrushHeight=5;
+				} else {
+					//fnDebugMessage("fnInitialise, failed to get the canvas's context"); //debug message, we were unable to get the canvas' context
+				}	
+			}
+			
+
+			function fnDebugMessage(sMessage) {
+				//this function posts the specific value (sMessage) to the console - a good way of debugging and testing
+				console.log("Debug Message: " + sMessage);
+			}
+			
+			
+			function fnPaint(iX, iY, iWidth, iHeight) {
+				//use this function to fill a rectangle at the specific location (x, y) and specified size (width, height) and specified colour (colour)
+				//by switching the value provided for sColour to the canvas background colour you will be able to use this to erase painted marks
+				//fnDebugMessage("fnPaint called at x: " + iX + ", y: " + iY + ", w: " + iWidth + ", h: " + iHeight); //send a debug message with the location and size
+				
+				oCanvasContext.fillStyle = sFillColour; //use the value stored in the sFillColour global variable as the fill colour
+				oCanvasContext.fillRect(iX-(iWidth / 2), iY-(iHeight / 2), iWidth, iHeight); //fillRect() method (function) draws a "filled" rectangle; default color was specified by the fillstyle. the width and height /2 has been taken away from the width and height respectivley so that the paint always appears directly beneath the brush no matter the size of the brush.
+			}
+			
+
+			function fnClearCanvas() {
+				//use this function to clear the canvas
+				var oSelectedColour = document.getElementById("selectedColour"); // creates a variable used to store an element. in this case it is being used to store the selected colour element 
+				sCanvasColour = getComputedStyle(oSelectedColour).getPropertyValue("background-color"); // sets the value of the canvas colour variable equal to the colour of the background of the selected colour element 
+				sFillColour = sCanvasColour; // sets the fill colour equal to the canvas colour 
+				fnPaint(0, 0, oCanvas.width * 2, oCanvas.height * 2); // this line will clear the canvas and set the background to the currently selected colour by calling the paint method. by parsing in 0 for the x and y positions and the canvas height and width a rectangle will be drawn, in the selected colour, starting from the top left corner that will cover the entire canvas. As it will overlap all previous drawings it will give the illusion of the canvas being cleared. the canvas width and height have been multiplied by 2 in oder to account for the way the offset is dealt with in the paint method 
+			}
+
+			
+			function fnSetFillColour(sColour) {
+				//use this function to set the fill colour (this refers to the activated colour)
+				fnDebugMessage("fnSetFillColour: " + sColour); //send a debug message with the function being called and the value
+				sFillColour=sColour; //store the value provided as sColour
+			}
+	
+			
+			function fnColourSelected(oElement) {
+				//use this function to process the colour selection tool
+				var sColour; // creates a string variable used to hold the colour of the element parsed
+				//lets use JavaScript to get the colour of the select element
+				if(oElement.id == "eraser"){ // if the id of the element is equal to 'eraser' run the indented code
+					sColour = sCanvasColour; // sets the value of the sColour variable equal to the value of the canvas colour so that when the user uses the eraser tool it will just paint normaally except using the colour of the canvas to give the illusion of erasing
+					document.getElementById("eraser").style.border ="2px solid #ff00ff"; // sets the border of the eraser element to a vibrant pink to indicate to the user that it has been selected
+					document.getElementById("selectedColour").style.border ="2px solid #a0a0a0"; // sets the boder of the selected colour element to the unselected colour to indicate to the user that the eraser tool is currently in use.
+				}
+				else{ // if the element parsed is one of the 8 colour elements, run the indented code
+					document.getElementById("eraser").style.border = "2px solid #a0a0a0"; // sets the boder of the eraser tool to the unselected colour so it is clear to the user that the paint brush is currently in use
+					document.getElementById("selectedColour").style.border = "2px solid #ff00ff"; // sets the border of the selected colour element to a vibrant pink to indicate to the user that the paint brush is currently selected.
+					sColour=getComputedStyle(oElement).getPropertyValue("background-color");  //this instruction automatically detects the background colour of the element that was self referenced and stores it in the local sColour variable
+					document.getElementById("selectedColour").style.background = sColour;  // sets the background of the selectedColour element to the value of the variable sColour which is the currently selected colour. This will result in the background colour of the selectedColour element being the same as the colour the user has currently selected. 
+				}
+				
+				fnSetFillColour(sColour); //execute the fnSetFillColour and pass it the value we are holding in the sColour variable
+				
+			}
+	
+	
+			function fnTrackMouse(e) {
+				//this function is called "everytime" the user's mouse is moved when over the associated element (in this case the canvas)
+				//we have also added the ability for it to accept a parameter (called e, actually we can call it anything but as event is a reserved work "e" makes some sense
+				var canvasRect = oCanvas.getBoundingClientRect(); //use this function to dynamically get the size of the canvas and its position
+				var oElement = document.getElementById("brushType"); // creates a variabe to hold an element and sets it to the elment with the ID brushType.
+				iMouseX=(e.clientX - canvasRect.left); //modify the original position of the mouse by accounting for the position on the canvas; on the x
+				iMouseY=(e.clientY - canvasRect.top); //modify the original position of the mouse by accounting for the position on the canvas; on the y
+				
+				fnDebugMessage("Tracking mouse: ALT key detected: " + e.altKey); //update the console to show if the alt key code is being pressed 
+				fnDebugMessage("Tracking mouse: SHIFT key detected: " + e.shiftKey); //update the console to show if shift key is being pressed 
+				fnDebugMessage("Tracking mouse: CNTRL key detected: " + e.ctrlKey); //update the console to show if control key is being pressed 
+				if(e.shiftKey == true){ // if the shift key is currently being pressed run the indented code 
+					oElement.innerHTML = "Spray"; // sets the text of the element to spray so it is indicated to the user when the spray tool is active.
+				}
+				if(e.shiftKey == false){ // if the shift key is not currently being pressed run the indented code
+					oElement.innerHTML = "Brush"; // sets the text of the element to brush so it is indicated to the user when the brush tool is active.
+				} 
+				
+				if (e.buttons==1 && e.shiftKey == false) { //this checks to see if the user is pressing the left mouse button (1 = the left mouse button) and is not pressing the shift key
+					//the user has pressed the left button - so lets start painting
+					fnPaint(iMouseX, iMouseY, iBrushWidth, iBrushHeight); //call the fnPaint function and pass it the coordinates and size to paint
+				}
+				
+				if (e.buttons==1 && e.shiftKey == true) { //this checks to see if the user is pressing the left mouse button (1 = the left mouse button) and is pressing the shift key
+					fnSpray_MC(); //call the fnSpray_MC function
+					
+				}
+
+				//fnDebugMessage("Tracking mouse: x: " + iMouseX + ", y: "+iMouseY); //update the console to show the mouse position, dont forget, you may need to include an offset to centre the paint effect
+			}
+			//this function is used to set the size of the brush depending on the element clicked. To do this the elment clicked is parsed to the function. depending on the id of the element parsed a different brush size is selected
+			function fnBrushSize_MC(oElement){
+				if(oElement.id == "brushSize1Border"){ // if the id of the element parsed is equal to brushSize1Border, run the indented code.
+					iBrushHeight = 10; // sets the brush height to 10px
+					iBrushWidth = 10; // sets the brush width to 10px
+				}
+				else if(oElement.id == "brushSize2Border"){ // if the id of the element parsed is equal to brushSize2Border, run the indented code.
+					iBrushHeight = 20;  // sets the brush height to 20px
+					iBrushWidth = 20; // sets the brush width to 20px
+				}
+				else if(oElement.id == "brushSize3Border"){ // if the id of the element parsed is equal to brushSize3Border, run the indented code.
+					iBrushHeight = 15; // sets the brush height to 15px
+					iBrushWidth = 15; // sets the brush width to 15px
+				}
+				else if(oElement.id == "brushSize4Border"){ // if the id of the element parsed is equal to brushSize4Border, run the indented code.
+					iBrushHeight = 25; // sets the brush height to 25px
+					iBrushWidth = 25; // sets the brush width to 25px
+				}
+				else { // if none of the other conditions are met set the brush size to its defualt value on start up which is 5px
+					iBrushHeight = 5; // sets the brush height to 5
+					iBrushWidth = 5; // sets the brush width to 5
+				}
+				
+				// the following code sets the border of the brush size elements to the unselected border colour and then sets the border of the element clicked to a vibrant pink. this is to ensure that only the brush size currently use has the border to make it clear for the user.
+				document.getElementById("brushSize1Border").style.borderColor="#a0a0a0";
+				document.getElementById("brushSize2Border").style.borderColor="#a0a0a0";
+				document.getElementById("brushSize3Border").style.borderColor="#a0a0a0";
+				document.getElementById("brushSize4Border").style.borderColor="#a0a0a0";
+				
+				oElement.style.borderColor="#ff00ff"; 
+			}
+			// this function is used to manage what happens when blend button is pressed 
+			function fnBlend_MC(){
+				var oRegex = /[a-zA-Z!\£\¬\_\`|\~|\!|\@|\#|\$|\%|\^|\&|\*|\(|\)|\+|\=|\[|\{|\]|\}|\||\\|\'|\<|\,|\.|\>|\?|\/|\""|\;|\:|\s]+/; // defines a regular expression that inputs will be checked against to ensure they are valied. the expression matches any letter and special chracter
+				var sRed; // defines a variable that will be used to hold the value of the amount of red the user wants in their RGB colour. the variable is a string as it is obtained from user input.
+				var iRed; //defines a variable that will hold the integer of the value, for red, that was inputed by the user, for validation and for the hexadecimal string  
+				var sGreen; // defines a variable that will be used to hold the value of the amount of green the user wants in their RGB colour. the variable is a string as it is obtained from user input.
+				var iGreen; //defines a variable that will hold the integer of the value, for green, that was inputed by the user, for validation and for the hexadecimal string  
+				var sBlue; // defines a variable that will be used to hold the value of the amount of blue the user wants in their RGB colour. the variable is a string as it is obtained from user input.
+				var iBlue; //defines a variable that will hold the integer of the value, for blue, that was inputed by the user, for validation and for the hexadecimal string 
+				var sHexString; // defines a string variable that will be used to hold the value of the hexadecimaal; string the user blends so it can be parsed to the fnSetFillColour function. 
+				do{ // loops the indented code if the user inputs a value that is less than 0, greater than 255 or if the string inputted contaains any letters or special characters. as the loop is a do while loop the code is always run at least onces as the user has to enter a value before the program can decide to loop. The .test function checks whether the string stored in sRed matches the regular expression. If the value of sRed is null e.g. if the user presses the cancel button the default value is set to an empty string so the code is not looped if the user presses the cancel button.
+					sRed = prompt("enter a value for RED between 0 and 255"); // creates a prompt box that asks the user to input a value between 0 and 255 for how much red they want in their colour, the value is stored in the sRed variable	
+					iRed = parseInt(sRed); // the value in the user inputted string is parsed into an integer and stored in the iRed variable so that it can be converted into a hexadecimal string
+				}while( iRed < 0 || iRed > 255 || oRegex.test(sRed || '') == true);
+				
+				sRed = iRed.toString(16); // converts the value stored in the iRed variable into a hexadecimal string and stores the result in the sRed variable
+				if(iRed < 16){ // runs the indented code if the value the user inputted was less than 16
+					sRed = "0" + sRed; // pads the hexcode for the user input with a 0 if it was less than 16 so that the code is a 2 digit hex number so it can be used as a colour code, the result is then stored in the sRed variable 
+				}
+				
+				if(isNaN(iRed) == false){ // isNan is a function to check whether a value is not a number if it is not it returns true, if the a value is a number it returns false. if the value of iRed is not a number the indented code should not run as it means that the user pressed the cancel button so they should not be prompted to input a value for green and blue
+					do{ // loops the indented code until the user enters a value which is not less than 0 or not greater than 255 or until hte user enters value which is not an alphatbet character or special chracter. The .test function checks whether the string stored in sRed matches the regular expression. If the value of sRed is null e.g. if the user presses the cancel button the default value is set to an empty string so the code is not looped if the user presses the cancel button.
+						sGreen = prompt("enter a value for GREEN between 0 and 255"); // prompts the user to enter a value between 0 and 255 for how much green they want in their colour 
+						iGreen = parseInt(sGreen); // parses the value inputed which is stored in the sGreen variable to an integer and stores it in the iGreen variable so it can be converted to a hexadecimal string
+					}while(iGreen < 0 || iGreen > 255 || oRegex.test(sGreen|| '') == true);
+					
+					sGreen = iGreen.toString(16); // converts the value of iGreen to a hexadecimal string and stores the result in sGreen
+					if(iGreen < 16){ // if the value inputed is less than 16 run the indented code
+						sGreen = "0" + sGreen; // adds a 0 to the front of the hexstring so it becomes a two digit hexstring so it can be used as a colour code
+					}
+					
+					if(isNaN(iGreen) == false){ // only run the indented code if the value inputed for green was a number as if the user canceled the prompt box the value of iGreen would be null and so the indented code should not run. This is if statement is nested whithin the if statement that is used for obtaining the green value as the user should only get prompted for a blue value if they have already inputed a value for green. additionally if the user cancels a prompt at any time no other prompt boxes should appear.
+						do{ // loops the indented code if the user inputs a value that is less than 0, greater than 255 or if the string inputted contaains any letters or special characters. as the loop is a do while loop the code is always run at least onces as the user has to enter a value before the program can decide to loop. The .test function checks whether the string stored in sRed matches the regular expression. If the value of sRed is null e.g. if the user presses the cancel button the default value is set to an empty string so the code is not looped if the user presses the cancel button.
+							sBlue = prompt("enter a value for BLUE between 0 and 255"); // prompts the user to input a value for blue and stores the string in the sBlue variable
+							iBlue = parseInt(sBlue); // parses the string inputed to an integer and stores it in the iBlue variable so it can be used 
+						}while(iBlue < 0 || iBlue > 255 || oRegex.test(sBlue || '') == true);
+						
+						sBlue = iBlue.toString(16); // converts the value the user inputed to a hexadecimal string
+						if(iBlue < 16){ // runs the indented code if the amount of blue the user inputed was less than 16
+							sBlue = "0" + sBlue; // pads the value of the hexstring stored is sBlue with a 0 if it is only one digit so it can be used as a colour code
+						}
+					}
+				}
+				if(isNaN(iRed) == false && isNaN(iGreen) == false && isNaN(iBlue) == false){ // runs the indented code only if the value inputed for red, green and blue were all numbers
+					sHexString = "#" + sRed + sGreen + sBlue; // sets the value of the sHexString variable equal to all the strings concatenated together with a hash in front so it can be used as a colour code 
+					fnSetFillColour(sHexString); // calls the fnSetFillColour function parsing the sHexString variabe so the colour will be set to the one the user has created
+					document.getElementById("selectedColour").style.background = sHexString; // sets the background of the element with ID selectedColour to the colour stored in the variable sHexString, so the user can see what colour they have created
+					document.getElementById("selectedColour").style.border = "2px solid #ff00ff"; // sets the boder of the element with ID selectedColour to a 2 pixel border with a virbant pink colour to show that the paint tool has been selected
+					document.getElementById("eraser").style.border = "2px solid #a0a0a0"; // sets the boder of the element with the ID eraser to a 2 pixel solid border with a grey colour to show the eraser tool is not selected
+				}
+			}
+			// this function is used to generate a random number which will be used to offset squares from the centre of the brush in order to create a spray effect. The argument the function is expecting is an integer which is the maximum value the random number can be.
+			function fnRandomNumber_MC(iMax){
+				var iNumber; //declare a variable called iNumber which will be used to hold the randomly created number 
+				iNumber = Math.floor(Math.random() * (iMax*2)) - iMax; // this line of code is used to generate a random number between the maximum value parsed in and the negative of the maximum value so that the squares will appear both sides of the centre when the spray tool is used
+				fnDebugMessage("iNumber: " + iNumber); // writes a method to the console displaying the random number using the fnDebugMessage function.
+				return iNumber; // returns the number to the fnSpray_MC so it can be used to create the spray effect.
+			}
+			// this function is used to manage what should happen when the user is using the spray tool is being used.
+			function fnSpray_MC(){
+				var iRadiusWidth = fnRandomNumber_MC(iBrushWidth / 2); // calls the fnRandomNumber_MC function and stores the result in the iRadius variable. the value parsed is the currently selected brush height /2 so that the spray can place a square randomly along the horizontal line within the bounds of the current brush size
+				var iRadiusHeight = fnRandomNumber_MC(iBrushHeight / 2);// calls the fnRandomNumber_MC function and stores the result in the iRadius variable. the value parsed is the currently selected brush height /2 so that the spray can place a square randomly along the vertical line within the bounds of the current brush size
+				fnPaint(iMouseX + iRadiusWidth, iMouseY + iRadiusHeight, iBrushWidth / 5, iBrushHeight / 5); // calls the fnPaint function parsing the current x and y positions of the mouse plus the randomly created values so that the squares appear randomly within the bounds of the brush size. the current brush width and height /5 are also parsed so that the squares are a suitable size to create the spray effect
+			}
+		</script>
+
+	</head>
+	
+	<!-- 
+		this "onload" event fires when the HTML <body> has loaded. In essence, we are telling the browser that once the page 
+		has completely loaded all the content to execute a script. 
+		in this case the function being called is "fnInitialise" and we are passing it two parameters: 
+			the first (work out how this sets the width) = 640 
+			the second (work out how this sets the height) = 480 
+			this canvas size has been chosen as it will be visible on most screens without the need for scrolling
+	-->
+	<body onload="fnInitialise(800, 800);">
+
+		<!-- 
+			this div block (HTML page divider) is used to hold the entire interactive painting HTML elements 
+			the benefit of putting multiple elements in a single container is that if you set the location of the 
+			container each of the elements held by the container will move relative to it; move one, move all 
+		-->
+        <div id="cw1MainContainer">
+
+            <!-- this div block is only used to hold the HTML canvas element -->
+            <div id="cw1CanvasContainer">
+                <canvas id="cw1Canvas" onmousemove="fnTrackMouse(event);" onmousedown="fnTrackMouse(event);" onmouseup="fnAddtoArray();"></canvas> 
+				
+                <!-- 
+                	by specifing the onmouseover event the canvas will call the "fnTrackMouse" function EVERY time the 
+                	mouse moves 1 pixel over the canvas.
+                	by passing the JavaScript "event" we are effectively also passing details about the event, 
+                	e.g. where the mouse was, what buttons were pressed etc. 
+                -->
+            </div>
+
+            <!-- this div block is only used to group and hold the HTML colour selection tool elements -->
+            <div id="cw1ColoursContainer">
+				<div id="colour1" class="tool" onclick="fnColourSelected(this);"></div> <!-- adds the 1st colour element which calls the fnColourSelected function when it is clicked parsing itself, the tool class attribute has been applied as it shares some properties with other elements -->
+				<div id="colour2" class="tool" onclick="fnColourSelected(this);"></div> <!-- adds the 2nd colour element which calls the fnColourSelected function when it is clicked parsing itself, the tool class attribute has been applied as it shares some properties with other elements -->
+				<div id="colour3" class="tool" onclick="fnColourSelected(this);"></div> <!-- adds the 3rd colour element which calls the fnColourSelected function when it is clicked parsing itself, the tool class attribute has been applied as it shares some properties with other elements -->
+				<div id="colour4" class="tool" onclick="fnColourSelected(this);"></div> <!-- adds the 4th colour element which calls the fnColourSelected function when it is clicked parsing itself, the tool class attribute has been applied as it shares some properties with other elements -->
+				<div id="colour5" class="tool" onclick="fnColourSelected(this);"></div> <!-- adds the 5th colour element which calls the fnColourSelected function when it is clicked parsing itself, the tool class attribute has been applied as it shares some properties with other elements -->
+				<div id="colour6" class="tool" onclick="fnColourSelected(this);"></div> <!-- adds the 6th colour element which calls the fnColourSelected function when it is clicked parsing itself, the tool class attribute has been applied as it shares some properties with other elements -->
+				<div id="colour7" class="tool" onclick="fnColourSelected(this);"></div> <!-- adds the 7th colour element which calls the fnColourSelected function when it is clicked parsing itself, the tool class attribute has been applied as it shares some properties with other elements -->
+				<div id="colour8" class="tool" onclick="fnColourSelected(this);"></div> <!-- adds the 8th colour element which calls the fnColourSelected function when it is clicked parsing itself, the tool class attribute has been applied as it shares some properties with other elements -->
+				<div id="blend" class="tool" onclick="fnBlend_MC();">Blend</div> <!-- adds blend element which caalls the fnBlend_MC function when it is clicked, the tool class attribute has been applied as it shares some properties with other elements -->
+				<div id="selectedColour" class="tool" onclick="fnColourSelected(this);"></div> <!-- adds an element that will be used to display the currently selected colour, the colour selected function is called when it is clicked and the element is parsed. This is so that the user can easily access the colour they have blended from eraser mode without haveing to create it again -->
+				<div id="brushType">Brush</div> <!-- adds an element that displays what type of brush the user has selected, spray or brush. By default this is set to the basic brush -->
+				<div id="sprayInstructions" style="font-weight: bold">Hold SHIFT and left click to use spray tool!</div> <!-- adds an element with text that instructs the user on how to use the spray tool -->
+				
+            </div>
+         	
+            <!-- this div block is only used to group and hold the HTML control tool elements -->
+            <div id="cw1ControlsContainer">
+				<div id="brushSize1"></div> <!-- adds the element that is used to indicate the size of brush size 1 -->
+				<div id="brushSize2"></div> <!-- adds the element that is used to indicate the size of brush size 2 -->
+				<div id="brushSize3"></div> <!-- adds the element that is used to indicate the size of brush size 3 -->
+				<div id="brushSize4"></div> <!-- adds the element that is used to indicate the size of brush size 4 -->
+				<div id="brushSize1Border" class="tool" onclick="fnBrushSize_MC(this);"></div> <!-- adds the border of the 1th brushsize and calls the fnBrushSize_MC function when it is clicked, parsing itself, placed underneatah the indicator so that the border changes colour when user mouses over -->
+				<div id="brushSize2Border" class="tool" onclick="fnBrushSize_MC(this);"></div> <!-- adds the border of the 2th brushsize and calls the fnBrushSize_MC function when it is clicked, parsing itself, placed underneatah the indicator so that the border changes colour when user mouses over -->
+				<div id="brushSize3Border" class="tool" onclick="fnBrushSize_MC(this);"></div> <!-- adds the border of the 3th brushsize and calls the fnBrushSize_MC function when it is clicked, parsing itself, placed underneatah the indicator so that the border changes colour when user mouses over -->
+				<div id="brushSize4Border" class="tool" onclick="fnBrushSize_MC(this);"></div> <!-- adds the border of the 4th brushsize and calls the fnBrushSize_MC function when it is clicked, parsing itself, placed underneatah the indicator so that the border changes colour when user mouses over -->
+				<button id="control1" onclick="fnClearCanvas();" style="width:55px; height: 55px;">Reset</button> <!-- adds the reset button and calls the fnClearCanvas function when it is clicked, th ebutton has a width and height of 55px -->
+				<div id="eraser" onclick="fnColourSelected(this);">Eraser</div>  <!-- adds the eraser element with the text eraser and calls the fnColourSelected function when it is clicked, parsing itslef -->
+			</div>
+            
+        </div>
+		
+	</body>
+	
+	<!-- 
+		Test Log
+		*****************************************************************************************
+		Test Date, Use & Operatins No (1-6), Description, What did you test, Results, Reflections			
+		*****************************************************************************************
+			30/10/18 colour select (operation 4) All 8 colour elements appeared on the screen on startup at the right positions and size, in addition the border of each element changed when they were moused over. Passed.
+			30/10/18 paint mode (operation 1) The paint changes colour depending on the element that the user has clicked. Passed. The paint colour changes depending on the element that the user clicked however as of yet there is no clear way to tell what the currently selected colour is.
+			30/10/18 clear tool (operation 6) The background colour of the canvas changes to the colour that is currently selected when the button is pressed. Passed.
+			30/10/18 paint mode (operation 1) The paint appears directly beneath the cursor when the user paints using the defualt brush size. Passed. This was fixed by subtracting a value of 2 from the x and y position of the mouse tracking variables in the fnPaint function.
+			30/10/18 blend tool (operation 5) The blend tool element appeared on the screen when the program was loaded at the correct position and size. The element's border also changed when the user hovers over it. Passed.
+			30/10/18 eraser mode (operation 2) The eraser element appeared on the screen at the correct size and position when the program was loaded. Passed.
+			30/10/18 brush sizes (operation 3) The four different brush size elements appeared on the screen at the right positions, each one had a a border that changed colour when it was moused over. Passed.
+			30/10/18 paint mode (operation 1) The element which is used to display the currently selected colour appeared at the right position and size when the program was loaded. Passed.
+			30/10/18 paint mode (operation 1) The element used to display the currently selected colour changed depending on the colour that the user clicked. Passed.
+			30/10/18 eraser mode (operation 2) The eraser tool changes the fill colour to the same as the background colour when selected so when painting gives the idea of erasing. Passed. However when the eraser tool is selected the element used to display the currently selected colour changes to the canvas colour as well. this is because the eraser tool is also using the same methods as the paint tool except using the canvas colour. to fix this problem I can add an if else statment in the fnColourSelected function which checks if the element parsed is the eraser tool. if it is then the background of the selected colour element should not change. otherwise one of the colour elements has been selected so the selected colour element should change. In addition as of right now there is no clear way to identify whether the user is in paint mode or eraser mode. To fix this I could add borders around the elements that change colour when the tool is selcted. The code for these boders would be added in the previously added if else statement.
+			30/10/18 paint mode (operation 1), eraser mode (operation 4) The background of the selected colour element no longer changes colour when the eraser tool is selected. Passed.
+			30/10/18 paint mode (operation 1), eraser mode (operation 4) The border around the selected colour element changed colour when the user selected a colour and changed back when the user entered eraser mode. In addition the border around the eraser tool changed colour when the user entered eraser mode and changed back when the user went back to paint mode. Passed.
+			31/10/18 brush sizes (operation 3) The brush size changes depending on the button that was clicked and the user is informed of what brush size is selected by a change in border colour around the selected brush size. Passed.
+			31/10/18 paint mode (operation 1) When using the 4 different brush sizes the paint does not appear directly beneath the cursor when painting. Failed. This is because I have used a constant value for the offset which only centres the paint for the default brush. To ensure that the paint appears directly beanth the cursor regardless of the brush size the offset needs to be the current x and y position of the mouse - the brush width and height respectivley / 2, the values need to be divide by two so they become centred under the cursor.
+			31/10/18 clear tool (operation 6) Only one quater of the canvas was set to the currently selected colour rather than the whole canvas. Failed. This occured as the clear tool uses the paint method in order to paint a square the size of the canvas and the change to how the offset was managed in order to ensure that the paint appeared directly beneath the brush regardless of size. To fix this problem I will have to multiple the values that are being parsed into the paint method when the clear button is pressed by 2 in order to account for the offset.
+			31/10/18 blend tool (operation 5) The tree prompt boxes appeared asking the user to input a value between 0 and 255 for red green and blue. Passed.
+			31/10/18 blend tool (operation 5) If the user entered a value that was below 16 a colour would not be created. Failed. This is because colour codes require 6 characters and when converting values of less than 16 would result in hexadecimal strings of one character. In order to fix this problem i need to add a 0 in front of the hexadecimal string if the number the user inputed was less than 16. 
+			31/10/18 blend tool (operation 5) The user was continually asked to input a value for a colour if they try to input a value that is greater than 255 or less than 0. Passed.
+			31/10/18 blend tool (operation 5) The users were not able to use cancel button on the prompt boxes. Failed. This is beacuse the prompt function returns null when the cancel button is pressed and the loop keeps looping until the user enters the value that is a number. To fix this i will change the loop condition to check the string against a regular expression that matches against special characters and alphabet characters so that the program only loops when the user enters a wrong value, not when they press the cancel button.
+			1/11/18 spray tool (high level operation 1) A random number was generated between the positive radius of the currnent brush size and the negative radius.
+			1/11/18 spray tool (high level operation 1) smaller squares were continually placed at random positions within the bounds of the selected brush size. Passed.
+			1/11/18 spray tool (high level operation 1) The user could swap between the normal paint brush and the spray tool by pressing and holding the shift key and a text box changed text to indicate what brush type is selected. Passed.
+			3/11/18 paint mode (operation 1) The user could paint dots on the canvas by taapping on the mouse button. Passed.
+			3/11/18 spray tool (high level operation 1) the dots appeared randomly both horizontally and vertically giving a completly random affect. Passed.
+	-->
+
+</html>
